@@ -1,122 +1,329 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Rocket Launch Controller',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: RocketLaunchController(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class RocketLaunchController extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _RocketLaunchControllerState createState() => _RocketLaunchControllerState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _RocketLaunchControllerState extends State<RocketLaunchController> {
   int _counter = 0;
+  bool _isLiftoff = false;
 
+  //increment counter (ignite button)
   void _incrementCounter() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      if (_counter < 100) {
+        _counter++;
+        _checkLiftoff();
+      }
     });
+  }
+
+  //decrement counter (abort button)
+  void _decrementCounter() {
+    setState(() {
+      if (_counter > 0) {
+        _counter--;
+        _isLiftoff = false;
+      }
+    });
+  }
+
+  //reset counter button
+  void _resetCounter() {
+    setState(() {
+      _counter = 0;
+      _isLiftoff = false;
+    });
+  }
+
+  //check liftoff condition met
+  void _checkLiftoff() {
+    if (_counter == 100) {
+      setState(() {
+        _isLiftoff = true;
+      });
+      _showLiftoffDialog();
+    }
+  }
+
+  //liftoff success
+  void _showLiftoffDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.rocket_launch, color: Colors.green, size: 30),
+              SizedBox(width: 10),
+              Text('LIFTOFF SUCCESS!', style: TextStyle(color: Colors.green)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('🚀 Rocket has successfully launched!', 
+                   style: TextStyle(fontSize: 16)),
+              SizedBox(height: 10),
+              Image.asset(
+                'assets/rocket.gif',
+                height: 100,
+                width: 100,
+                fit: BoxFit.cover,
+              ),
+              SizedBox(height: 10),
+              Text('Mission Control: Excellent work, Cadets!', 
+                   style: TextStyle(fontStyle: FontStyle.italic)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _resetCounter();
+              },
+              child: Text('Start New Mission'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //color based on counter value
+  Color _getCounterColor() {
+    if (_counter == 0) {
+      return Colors.red;
+    } else if (_counter > 50) {
+      return Colors.green;
+    } else {
+      return Colors.orange;
+    }
+  }
+
+  //status message based on counter val
+  String _getStatusMessage() {
+    if (_counter == 0) {
+      return 'READY FOR LAUNCH SEQUENCE';
+    } else if (_counter < 50) {
+      return 'FUELING IN PROGRESS';
+    } else if (_counter < 100) {
+      return 'LAUNCH IMMINENT';
+    } else {
+      return 'LIFTOFF!';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('🚀 Rocket Launch Controller'),
+        backgroundColor: Colors.blue[900],
+        centerTitle: true,
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.blue[900]!, Colors.black],
+          ),
+        ),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
+          children: [
+            //mission status display
+            Container(
+              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    _getStatusMessage(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 10),
+                  if (_isLiftoff)
+                    Text(
+                      '🚀 ROCKET LAUNCHED SUCCESSFULLY! 🚀',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                ],
+              ),
+            ),
+
+            //counter display
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 20),
+              padding: EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.8),
+                shape: BoxShape.circle,
+                border: Border.all(color: _getCounterColor(), width: 4),
+              ),
+              child: Text(
+                '$_counter%',
+                style: TextStyle(
+                  fontSize: 50.0,
+                  fontWeight: FontWeight.bold,
+                  color: _getCounterColor(),
+                ),
+              ),
+            ),
+
+            //fuel gauge level
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+              'FUEL LEVEL',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 10),
+
+            //slider control
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: Slider(
+                min: 0,
+                max: 100,
+                value: _counter.toDouble(),
+                onChanged: (double value) {
+                  setState(() {
+                    _counter = value.toInt();
+                    _checkLiftoff();
+                  });
+                },
+                activeColor: _getCounterColor(),
+                inactiveColor: Colors.grey[600],
+                divisions: 100,
+                label: '$_counter%',
+              ),
+            ),
+
+            //button controls
+            Container(
+              margin: EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  //abort button
+                  ElevatedButton(
+                    onPressed: _decrementCounter,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text('ABORT', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+
+                  //ignite button
+                  ElevatedButton(
+                    onPressed: _incrementCounter,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.rocket_launch, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text('IGNITE', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+
+                  //reset button
+                  ElevatedButton(
+                    onPressed: _resetCounter,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.refresh, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text('RESET', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            //progress indicator
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+              child: LinearProgressIndicator(
+                value: _counter / 100,
+                backgroundColor: Colors.grey[800],
+                valueColor: AlwaysStoppedAnimation<Color>(_getCounterColor()),
+                minHeight: 10,
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+
+            //instructions
+            Container(
+              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Use the slider or IGNITE button to fuel the rocket. '
+                'Reach 100% for liftoff! ABORT decreases fuel, RESET clears everything.',
+                style: TextStyle(color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
